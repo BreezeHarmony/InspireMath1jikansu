@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOさん用 比例グラフ練習アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .timer-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .section {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .section.current {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .problem-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .problem-btn {
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .problem-btn:hover {
+            background: #e8e8ff;
+            border-color: #667eea;
+        }
+
+        .problem-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .problem-btn.done {
+            background: #51cf66;
+            color: white;
+            border-color: #51cf66;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .formula-display {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .table-container {
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .hint {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-check {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-check:hover {
+            background: #40c057;
+            transform: translateY(-2px);
+        }
+
+        .btn-next {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: #adb5bd;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #868e96;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #51cf66;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        /* Canvas styling */
+        #canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            height: 400px;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 TOさん用 比例グラフ練習</h1>
+
+    <div class="timer-bar">
+        <div class="section current">①確認 (5分) 問1-2</div>
+        <div class="section">②整数 (8分) 問3-5</div>
+        <div class="section">③分数 (10分) 問6-8</div>
+        <div class="section">④仕上げ (7分) 問9-10</div>
+    </div>
+
+    <div class="container">
+        <!-- 左パネル: 問題選択と入力 -->
+        <div class="panel">
+            <h2>📝 問題選択</h2>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="completed">0</div>
+                    <div>完了</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="total">10</div>
+                    <div>全体</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <div class="problem-list" id="problemList"></div>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+            <h2>📊 対応表を作成</h2>
+
+            <div class="formula-display" id="formulaDisplay">y = 2x</div>
+
+            <div class="hint" id="hint"></div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>x</th>
+                            <th id="yHeader">y</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td><input type="number" class="x-input" value="0" data-index="0"></td>
+                            <td><input type="number" class="y-input" data-index="0"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="controls">
+                <button class="btn-check" onclick="checkAnswer()">✓ チェック</button>
+                <button class="btn-reset" onclick="resetTable()">↻ リセット</button>
+            </div>
+
+            <div id="message"></div>
+
+            <div class="controls">
+                <button class="btn-next" onclick="nextProblem()">次へ →</button>
+            </div>
+        </div>
+
+        <!-- 右パネル: グラフ表示 -->
+        <div class="panel">
+            <h2>📈 グラフ</h2>
+            <canvas id="canvas"></canvas>
+            <div style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+                原点を中心にグラフを描画
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // データ定義
+        const problems = [
+            { id: 1, formula: 'y = 2x', coefficient: 2, hint: '整数なので、x = -2, -1, 0, 1, 2 でOK' },
+            { id: 2, formula: 'y = -3x', coefficient: -3, hint: '負の数。y は減少します' },
+            { id: 3, formula: 'y = 4x', coefficient: 4, hint: '整数。y は急に増加します' },
+            { id: 4, formula: 'y = -x', coefficient: -1, hint: 'x と y が反対の値になります' },
+            { id: 5, formula: 'y = 5x', coefficient: 5, hint: 'y が大きく変わるので、x は小さい値でOK' },
+            { id: 6, formula: 'y = ½x', coefficient: 0.5, hint: '🔑 y が整数になるには、x は偶数を選びましょう！(例: -4, -2, 0, 2, 4)' },
+            { id: 7, formula: 'y = -½x', coefficient: -0.5, hint: '🔑 y が整数になるには、x は偶数を選びましょう！(例: -4, -2, 0, 2, 4)' },
+            { id: 8, formula: 'y = 3/2x', coefficient: 1.5, hint: '🔑 y が整数になるには、x は偶数を選びましょう！(例: -4, -2, 0, 2, 4)' },
+            { id: 9, formula: 'y = -4x', coefficient: -4, hint: 'y が大きく変わるので注意' },
+            { id: 10, formula: 'y = -5/2x', coefficient: -2.5, hint: '🔑 y が整数になるには、x は偶数を選びましょう！' }
+        ];
+
+        let currentProblemIndex = 0;
+        let completedProblems = new Set();
+        let tableRows = 5; // デフォルト行数
+
+        // 初期化
+        function init() {
+            renderProblemList();
+            loadProblem(0);
+            updateProgress();
+        }
+
+        function renderProblemList() {
+            const list = document.getElementById('problemList');
+            list.innerHTML = problems.map((p, i) => `
+                <button class="problem-btn ${i === 0 ? 'active' : ''} ${completedProblems.has(i) ? 'done' : ''}"
+                        onclick="loadProblem(${i})">
+                    問${p.id}
+                </button>
+            `).join('');
+        }
+
+        function loadProblem(index) {
+            currentProblemIndex = index;
+            const problem = problems[index];
+
+            // UI更新
+            document.getElementById('formulaDisplay').textContent = problem.formula;
+            document.getElementById('hint').textContent = problem.hint;
+
+            // ボタン状態の更新
+            document.querySelectorAll('.problem-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+
+            // テーブルリセット
+            resetTable();
+            updateGraph();
+
+            // スクロール位置
+            document.querySelector('.panel').scrollTop = 0;
+        }
+
+        function resetTable() {
+            // テーブル行数は問題により異なる
+            tableRows = 5;
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            let html = '';
+            for (let i = 0; i < tableRows; i++) {
+                const xValue = i === 0 ? 0 : (i % 2 === 1 ? i : -i);
+                html += `
+                    <tr>
+                        <td><input type="number" class="x-input" value="${xValue}" data-index="${i}" step="0.5"></td>
+                        <td><input type="number" class="y-input" data-index="${i}" step="0.5"></td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+
+            // 入力イベント（入力中にリアルタイム更新）
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', updateGraph);
+                input.addEventListener('change', updateGraph);
+            });
+
+            document.getElementById('message').innerHTML = '';
+            setTimeout(updateGraph, 100);
+        }
+
+        function updateGraph() {
+            const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+
+            // Canvas サイズを設定（CSS と実際のピクセルを合わせる）
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 30; // ピクセル/単位
+
+            // 背景
+            ctx.fillStyle = '#f9f9f9';
+            ctx.fillRect(0, 0, width, height);
+
+            // グリッド
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = -10; i <= 10; i++) {
+                // 縦線
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * scale, 0);
+                ctx.lineTo(centerX + i * scale, height);
+                ctx.stroke();
+
+                // 横線
+                ctx.beginPath();
+                ctx.moveTo(0, centerY - i * scale);
+                ctx.lineTo(width, centerY - i * scale);
+                ctx.stroke();
+            }
+
+            // 軸
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+
+            // X軸
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+
+            // Y軸
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+
+            // 軸ラベル
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('x', width - 10, centerY - 10);
+            ctx.textAlign = 'center';
+            ctx.fillText('y', centerX + 10, 15);
+
+            // 刻度
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            for (let i = -10; i <= 10; i++) {
+                if (i !== 0) {
+                    // X軸
+                    ctx.textAlign = 'center';
+                    ctx.fillText(i, centerX + i * scale, centerY + 15);
+
+                    // Y軸
+                    ctx.textAlign = 'right';
+                    ctx.fillText(i, centerX - 5, centerY - i * scale + 4);
+                }
+            }
+
+            // 原点
+            ctx.fillStyle = '#000';
+            ctx.fillText('O', centerX - 10, centerY + 15);
+
+            // 入力されたデータをプロット
+            const points = [];
+            document.querySelectorAll('.x-input').forEach((xInput) => {
+                const index = xInput.getAttribute('data-index');
+                const yInput = document.querySelector(`.y-input[data-index="${index}"]`);
+
+                if (!xInput.value || !yInput || !yInput.value) return;
+
+                const x = parseFloat(xInput.value);
+                const y = parseFloat(yInput.value);
+
+                if (!isNaN(x) && !isNaN(y)) {
+                    points.push({ x, y });
+
+                    // 点をプロット
+                    const px = centerX + x * scale;
+                    const py = centerY - y * scale;
+
+                    // 背景の白いサークル
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(px, py, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 点（青いサークル）
+                    ctx.fillStyle = '#667eea';
+                    ctx.beginPath();
+                    ctx.arc(px, py, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 座標ラベル
+                    ctx.fillStyle = '#333333';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`(${x}, ${y})`, px, py - 15);
+                }
+            });
+
+            // 直線を描画（2点以上あれば）
+            if (points.length >= 2) {
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+
+                // 傾きを計算
+                const p1 = points[0];
+                const p2 = points[points.length - 1];
+
+                const slope = (p2.y - p1.y) / (p2.x - p1.x);
+
+                // 直線を描画（画面端から端まで）
+                const x_min = -width / (2 * scale);
+                const x_max = width / (2 * scale);
+
+                const y_min = p1.y + slope * (x_min - p1.x);
+                const y_max = p1.y + slope * (x_max - p1.x);
+
+                const startX = centerX + x_min * scale;
+                const startY = centerY - y_min * scale;
+                const endX = centerX + x_max * scale;
+                const endY = centerY - y_max * scale;
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+        }
+
+        function checkAnswer() {
+            const problem = problems[currentProblemIndex];
+            const coeff = problem.coefficient;
+
+            // テーブルから点を抽出
+            const points = [];
+            let isValid = true;
+
+            document.querySelectorAll('.x-input').forEach((xInput, index) => {
+                const yInput = document.querySelector(`.y-input[data-index="${index}"]`);
+                const x = parseFloat(xInput.value);
+                const y = parseFloat(yInput.value);
+
+                if (!isNaN(x) && !isNaN(y)) {
+                    points.push({ x, y });
+                    const expectedY = x * coeff;
+                    if (Math.abs(y - expectedY) > 0.01) {
+                        isValid = false;
+                    }
+                }
+            });
+
+            const messageDiv = document.getElementById('message');
+
+            if (points.length < 2) {
+                messageDiv.innerHTML = '<div class="message error">❌ 最低2行以上の対応表が必要です</div>';
+                return;
+            }
+
+            if (isValid) {
+                messageDiv.innerHTML = '<div class="message success">✓ 正解！対応表が正しいです。グラフを確認しましょう！</div>';
+                completedProblems.add(currentProblemIndex);
+                renderProblemList();
+                updateProgress();
+            } else {
+                messageDiv.innerHTML = '<div class="message error">❌ どこか間違っています。見直してみましょう！</div>';
+            }
+        }
+
+        function nextProblem() {
+            if (currentProblemIndex < problems.length - 1) {
+                loadProblem(currentProblemIndex + 1);
+            } else {
+                alert('全問終了！お疲れ様でした！');
+            }
+        }
+
+        function updateProgress() {
+            const completed = completedProblems.size;
+            document.getElementById('completed').textContent = completed;
+            const progress = (completed / problems.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // 初期化実行
+        window.addEventListener('load', () => {
+            init();
+            updateGraph();
+        });
+
+        // ページ読込完了後にも実行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(updateGraph, 100);
+            });
+        } else {
+            setTimeout(updateGraph, 100);
+        }
+
+        // リサイズ対応
+        window.addEventListener('resize', updateGraph);
+    </script>
+</body>
+</html>
